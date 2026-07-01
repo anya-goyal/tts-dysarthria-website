@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zero-Shot Dysarthric Speech Reconstruction</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet" type="text/css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #2196F3;
+      --text-color: #333;
+      --border-color: #e0e0e0;
+      --background-color: #ffffff;
+      --card-background: #f8f9fa;
+      --highlight-color: #f0f7ff;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-color);
+      background-color: #f4f6f9;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .model-tabs {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .model-tab {
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #666;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin: 0 1rem;
+      transition: color 0.2s;
+    }
+
+    .model-tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .model-content {
+      display: none;
+    }
+
+    .model-content.active {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--background-color);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    th, td {
+      padding: 0.8rem;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    th {
+      background-color: var(--card-background);
+      font-weight: 600;
+      color: var(--text-color);
+      padding: 1rem 0.5rem;
+      white-space: nowrap;
+    }
+
+    td {
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+
+    .highlight-col {
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    td.highlight-cell {
+      background-color: var(--highlight-color);
+    }
+
+    .prompt-cell, .target-cell, .level-cell {
+      font-size: 0.85rem;
+      line-height: 1.4;
+      padding: 0.8rem 0.5rem;
+      text-align: left;
+    }
+
+    .level-cell {
+      text-align: center;
+      font-weight: 500;
+    }
+
+    audio {
+      width: 150px;
+      margin: 0.3rem 0;
+    }
+
+    audio::-webkit-media-controls-panel {
+      background-color: var(--card-background);
+    }
+
+    .paper-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 2.5rem 3rem;
+      margin-bottom: 2rem;
+    }
+
+    .section-note {
+      background: #f0f7ff;
+      border-left: 4px solid var(--primary-color);
+      border-radius: 4px;
+      padding: 0.9rem 1.2rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    .section-label {
+      display: inline-block;
+      background: var(--primary-color);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 4px;
+      padding: 0.15rem 0.6rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .toc-list li {
+      margin-bottom: 0.3rem;
+    }
+
+    .toc-list li a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .toc-list li a:hover {
+      text-decoration: underline;
+    }
+
+    cite {
+      font-style: normal;
+      color: var(--primary-color);
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container py-5">
+
+  <!-- Title card -->
+  <div class="paper-card text-center mb-4">
+    <h2 class="fw-bold mb-2" style="font-size:1.7rem; line-height:1.35;">
+      Zero-Shot Dysarthric Speech Reconstruction via<br>Inference-Time Control of Pretrained TTS Models
+    </h2>
+  </div>
+
+  <!-- Abstract + TOC card -->
+  <div class="paper-card">
+    <p><b>Abstract.</b>
+        Dysarthric speech severely impairs intelligibility, but existing restoration approaches typically rely on paired healthy speech, matched healthy reference speakers, or model fine-tuning, limiting their use in real-world settings. We investigate zero-shot dysarthric speech reconstruction with frozen text-to-speech models and find that F5-TTS and CosyVoice can reconstruct intelligible speech from dysarthric input alone, without requiring paired healthy data or fine tuning. We further introduce inference-time control methods, including iterative TTS generation methods and tunable activation steering, to analyze their effects on intelligibility, naturalness, and speaker similarity. Experimental results on the TORGO Database demonstrate substantial intelligibility improvements with average WER decreasing from 0.378 to 0.021 and speaker embedding similarity exceeding 0.90. Our results suggest that zero-shot TTS reconstruction combined with inference-time control offers a scalable and accessible approach to personalized dysarthric speech restoration.
+    </p>
+    <hr>
+    <p class="mb-1"><b>Contents</b></p>
+    <ul class="toc-list">
+      <li><a href="#zero-shot-reconstruction">1. Zero-Shot Reconstruction</a></li>
+      <li><a href="#iterative-refinement">2. Iterative Refinement</a></li>
+      <li><a href="#global-steering">3. Global Steering</a></li>
+      <li><a href="#local-steering">4. Speaker-Local Steering</a></li>
+    </ul>
+  </div>
+
+
+  <!-- ===================== ZERO-SHOT RECONSTRUCTION ===================== -->
+  <div class="paper-card" id="zero-shot-reconstruction">
+    <span class="section-label">Section 1</span>
+    <h2 class="section-title">Zero-Shot Reconstruction</h2>
+    <div class="section-note">
+      Given a dysarthric speaker recording (Dysarthric Prompt) and a target utterance, the model reconstructs intelligible speech in the speaker's voice without any task-specific training. For seen transcripts the prompt and target are the same utterance; for unseen transcripts the target is a held-out utterance.
+    </div>
+
+    <div class="model-tabs">
+      <div id="zs-seen-tab" class="model-tab active" onclick="switchTab('zs-seen')">Seen Transcript</div>
+      <div id="zs-unseen-tab" class="model-tab" onclick="switchTab('zs-unseen')">Unseen Transcript</div>
+    </div>
+
+    <!-- Seen -->
+    <div id="zs-seen-content" class="model-content active">
+      <table>
+        <thead>
+          <tr>
+            <th>Dysarthric Prompt</th>
+            <th>Dysarthria Level</th>
+            <th>Prompt Transcription</th>
+            <th class="highlight-col">Generated Speech</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/1.wav"></audio></td>
+            <td class="level-cell">Mild</td>
+            <td class="prompt-cell">He studied the mammalian chronology of the European Eocene and Upper Miocene.</td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraftx/1.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/4.wav"></audio></td>
+            <td class="level-cell">Moderate</td>
+            <td class="prompt-cell">He also purchased land to further his orange and grape growing capacity.</td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraftx/4.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/7.wav"></audio></td>
+            <td class="level-cell">Severe</td>
+            <td class="prompt-cell">The building is now offices.</td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraftx/7.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Unseen -->
+    <div id="zs-unseen-content" class="model-content">
+      <table>
+        <thead>
+          <tr>
+            <th>Dysarthric Prompt</th>
+            <th>Dysarthria Level</th>
+            <th>Prompt Transcription</th>
+            <th>Target Transcription</th>
+            <th class="highlight-col">Generated Speech</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/1.wav"></audio></td>
+            <td class="level-cell">Mild</td>
+            <td class="prompt-cell">He studied the mammalian chronology of the European Eocene and Upper Miocene.</td>
+            <td class="target-cell">Selected forms are propagated by stem cuttings in Micronesia.</td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraftx/2.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/4.wav"></audio></td>
+            <td class="level-cell">Moderate</td>
+            <td class="prompt-cell">He also purchased land to further his orange and grape growing capacity.</td>
+            <td class="target-cell">Moreover, a few deities are not easily classifiable under these terms.</td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraftx/5.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/7.wav"></audio></td>
+            <td class="level-cell">Severe</td>
+            <td class="prompt-cell">The building is now offices.</td>
+            <td class="target-cell">Roy is bilingual, and can speak English and French.</td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraftx/8.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- ===================== ITERATIVE REFINEMENT ===================== -->
+  <div class="paper-card" id="iterative-refinement">
+    <span class="section-label">Section 2</span>
+    <h2 class="section-title">Iterative Refinement</h2>
+    <div class="section-note">
+      Starting from an initial zero-shot reconstruction, iterative refinement progressively corrects residual acoustic artifacts through successive inference passes. Iteration 1 corresponds to the zero-shot baseline.
+    </div>
+
+    <div class="model-tabs">
+      <div id="ir-seen-tab" class="model-tab active" onclick="switchTab('ir-seen')">Seen Transcript</div>
+      <div id="ir-unseen-tab" class="model-tab" onclick="switchTab('ir-unseen')">Unseen Transcript</div>
+    </div>
+
+    <!-- Seen -->
+    <div id="ir-seen-content" class="model-content active">
+      <table>
+        <thead>
+          <tr>
+            <th>Dysarthric Prompt</th>
+            <th>Dysarthria Level</th>
+            <th>Prompt Transcription</th>
+            <th>Iteration 1 (Zero-Shot)</th>
+            <th>Iteration 2</th>
+            <th>Iteration 3</th>
+            <th>Iteration 4</th>
+            <th class="highlight-col">Iteration 5</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/1.wav"></audio></td>
+            <td class="level-cell">Mild</td>
+            <td class="prompt-cell">He studied the mammalian chronology of the European Eocene and Upper Miocene.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/2.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/gt/1.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/4.wav"></audio></td>
+            <td class="level-cell">Moderate</td>
+            <td class="prompt-cell">He also purchased land to further his orange and grape growing capacity.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/5.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/gt/4.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/7.wav"></audio></td>
+            <td class="level-cell">Severe</td>
+            <td class="prompt-cell">The building is now offices.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/8.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/gt/7.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Unseen -->
+    <div id="ir-unseen-content" class="model-content">
+      <table>
+        <thead>
+          <tr>
+            <th>Dysarthric Prompt</th>
+            <th>Dysarthria Level</th>
+            <th>Prompt Transcription</th>
+            <th>Target Transcription</th>
+            <th>Iteration 1 (Zero-Shot)</th>
+            <th>Iteration 2</th>
+            <th>Iteration 3</th>
+            <th>Iteration 4</th>
+            <th class="highlight-col">Iteration 5</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/1.wav"></audio></td>
+            <td class="level-cell">Mild</td>
+            <td class="prompt-cell">He studied the mammalian chronology of the European Eocene and Upper Miocene.</td>
+            <td class="target-cell">Selected forms are propagated by stem cuttings in Micronesia.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/2.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/gt/1.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/4.wav"></audio></td>
+            <td class="level-cell">Moderate</td>
+            <td class="prompt-cell">He also purchased land to further his orange and grape growing capacity.</td>
+            <td class="target-cell">Moreover, a few deities are not easily classifiable under these terms.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/5.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/gt/4.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/7.wav"></audio></td>
+            <td class="level-cell">Severe</td>
+            <td class="prompt-cell">The building is now offices.</td>
+            <td class="target-cell">Roy is bilingual, and can speak English and French.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/8.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/gt/7.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- ===================== GLOBAL STEERING ===================== -->
+  <div class="paper-card" id="global-steering">
+    <span class="section-label">Section 3</span>
+    <h2 class="section-title">Global Steering</h2>
+    <div class="section-note">
+      Global steering applies a steering vector constructed as an average of activations across all dysarthric speakers in TORGO. Each column shows output at a different steering strength (0 = no steering).
+    </div>
+
+    <div class="model-tabs">
+      <div id="gs-seen-tab" class="model-tab active" onclick="switchTab('gs-seen')">Seen Transcript</div>
+      <div id="gs-unseen-tab" class="model-tab" onclick="switchTab('gs-unseen')">Unseen Transcript</div>
+    </div>
+
+    <!-- Seen -->
+    <div id="gs-seen-content" class="model-content active">
+      <table>
+        <thead>
+          <tr>
+            <th>Dysarthric Prompt</th>
+            <th>Dysarthria Level</th>
+            <th>Prompt Transcription</th>
+            <th>Strength 0</th>
+            <th>Strength 0.25</th>
+            <th>Strength 0.5</th>
+            <th>Strength 1</th>
+            <th>Strength 2</th>
+            <th class="highlight-col">Strength 5</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/1.wav"></audio></td>
+            <td class="level-cell">Mild</td>
+            <td class="prompt-cell">He studied the mammalian chronology of the European Eocene and Upper Miocene.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/2.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/2.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/4.wav"></audio></td>
+            <td class="level-cell">Moderate</td>
+            <td class="prompt-cell">He also purchased land to further his orange and grape growing capacity.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/5.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/5.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/7.wav"></audio></td>
+            <td class="level-cell">Severe</td>
+            <td class="prompt-cell">The building is now offices.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/8.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/8.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Unseen -->
+    <div id="gs-unseen-content" class="model-content">
+      <table>
+        <thead>
+          <tr>
+            <th>Dysarthric Prompt</th>
+            <th>Dysarthria Level</th>
+            <th>Prompt Transcription</th>
+            <th>Target Transcription</th>
+            <th>Strength 0</th>
+            <th>Strength 0.25</th>
+            <th>Strength 0.5</th>
+            <th>Strength 1</th>
+            <th>Strength 2</th>
+            <th class="highlight-col">Strength 5</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/1.wav"></audio></td>
+            <td class="level-cell">Mild</td>
+            <td class="prompt-cell">He studied the mammalian chronology of the European Eocene and Upper Miocene.</td>
+            <td class="target-cell">Selected forms are propagated by stem cuttings in Micronesia.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/2.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/2.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/4.wav"></audio></td>
+            <td class="level-cell">Moderate</td>
+            <td class="prompt-cell">He also purchased land to further his orange and grape growing capacity.</td>
+            <td class="target-cell">Moreover, a few deities are not easily classifiable under these terms.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/5.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/5.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/7.wav"></audio></td>
+            <td class="level-cell">Severe</td>
+            <td class="prompt-cell">The building is now offices.</td>
+            <td class="target-cell">Roy is bilingual, and can speak English and French.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/8.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/8.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- ===================== LOCAL STEERING ===================== -->
+  <div class="paper-card" id="local-steering">
+    <span class="section-label">Section 4</span>
+    <h2 class="section-title">Speaker-Local Steering</h2>
+    <div class="section-note">
+      Speaker-local steering constructs and a unique steering vector for each speaker in TORGO. Each column shows output at a different steering strength (0 = no steering).
+    </div>
+
+    <div class="model-tabs">
+      <div id="ls-seen-tab" class="model-tab active" onclick="switchTab('ls-seen')">Seen Transcript</div>
+      <div id="ls-unseen-tab" class="model-tab" onclick="switchTab('ls-unseen')">Unseen Transcript</div>
+    </div>
+
+    <!-- Seen -->
+    <div id="ls-seen-content" class="model-content active">
+      <table>
+        <thead>
+          <tr>
+            <th>Dysarthric Prompt</th>
+            <th>Dysarthria Level</th>
+            <th>Prompt Transcription</th>
+            <th>Strength 0</th>
+            <th>Strength 0.25</th>
+            <th>Strength 0.5</th>
+            <th>Strength 1</th>
+            <th>Strength 2</th>
+            <th class="highlight-col">Strength 5</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/1.wav"></audio></td>
+            <td class="level-cell">Mild</td>
+            <td class="prompt-cell">He studied the mammalian chronology of the European Eocene and Upper Miocene.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/2.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/2.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/4.wav"></audio></td>
+            <td class="level-cell">Moderate</td>
+            <td class="prompt-cell">He also purchased land to further his orange and grape growing capacity.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/5.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/5.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/7.wav"></audio></td>
+            <td class="level-cell">Severe</td>
+            <td class="prompt-cell">The building is now offices.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/8.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/8.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Unseen -->
+    <div id="ls-unseen-content" class="model-content">
+      <table>
+        <thead>
+          <tr>
+            <th>Dysarthric Prompt</th>
+            <th>Dysarthria Level</th>
+            <th>Prompt Transcription</th>
+            <th>Target Transcription</th>
+            <th>Strength 0</th>
+            <th>Strength 0.25</th>
+            <th>Strength 0.5</th>
+            <th>Strength 1</th>
+            <th>Strength 2</th>
+            <th class="highlight-col">Strength 5</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/1.wav"></audio></td>
+            <td class="level-cell">Mild</td>
+            <td class="prompt-cell">He studied the mammalian chronology of the European Eocene and Upper Miocene.</td>
+            <td class="target-cell">Selected forms are propagated by stem cuttings in Micronesia.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/1.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/2.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/2.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/4.wav"></audio></td>
+            <td class="level-cell">Moderate</td>
+            <td class="prompt-cell">He also purchased land to further his orange and grape growing capacity.</td>
+            <td class="target-cell">Moreover, a few deities are not easily classifiable under these terms.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/4.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/5.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/5.wav"></audio></td>
+          </tr>
+          <tr>
+            <td><audio controls preload="none" src="audios/tts/EN/prompt/7.wav"></audio></td>
+            <td class="level-cell">Severe</td>
+            <td class="prompt-cell">The building is now offices.</td>
+            <td class="target-cell">Roy is bilingual, and can speak English and French.</td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraft/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/xtts2/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/gt/7.wav"></audio></td>
+            <td><audio controls preload="none" src="audios/tts/EN/voicecraftx/8.wav"></audio></td>
+            <td class="highlight-cell"><audio controls preload="none" src="audios/tts/EN/voicecraft/8.wav"></audio></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  const prefixes = ['zs-', 'ir-', 'gs-', 'ls-'];
+
+  function getPrefix(tabName) {
+    for (const p of prefixes) {
+      if (tabName.startsWith(p)) return p;
+    }
+    return null;
+  }
+
+  function switchTab(tabName) {
+    const prefix = getPrefix(tabName);
+    if (!prefix) return;
+
+    document.querySelectorAll(`[id^="${prefix}"][id$="-tab"]`).forEach(el => el.classList.remove('active'));
+    document.querySelectorAll(`[id^="${prefix}"][id$="-content"]`).forEach(el => el.classList.remove('active'));
+
+    const tab = document.getElementById(tabName + '-tab');
+    const content = document.getElementById(tabName + '-content');
+    if (tab) tab.classList.add('active');
+    if (content) content.classList.add('active');
+  }
+</script>
+
+</body>
+</html>
