@@ -1,0 +1,2 @@
+Sample: F01_S1_array_0030
+Transcript: The quick brown fox jumps over the lazy dog.
